@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Top 25, week by week</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header><div class="wrap">
+  <h1>Top 25, week by week</h1>
+  <p class="sub">Every poll release for a season from CollegeFootballData.com, as a movement grid or week by week.</p>
+  <div class="controls">
+    <label>API key<input id="key" type="password" autocomplete="off" placeholder="CollegeFootballData key"></label>
+    <a class="getkey" href="https://collegefootballdata.com/key" target="_blank" rel="noopener">Get a free key</a>
+    <label>Season<input id="year" type="number" min="1936" max="2100"></label>
+    <button id="load">Load rankings</button>
+    <label class="ghost-wrap"><span>Or open a saved response</span><input id="file" type="file" accept=".json,application/json"></label>
+  </div>
+  <p id="keyhint" class="keyhint">No key yet? "Get a free key" opens the CollegeFootballData sign-up in a new tab. Enter your email there and the key arrives in your inbox, then paste it above. The free tier allows 1,000 calls a month, and each load here uses two.</p>
+  <p class="quota"><span id="quota">Calls left this month: unknown</span> <button id="checkquota" class="ghost small">Check</button></p>
+  <details><summary>API settings</summary>
+    <label>Base URL <input id="base" value="https://api.collegefootballdata.com"></label>
+  </details>
+</div></header>
+
+<main><div class="wrap">
+  <p id="status" class="status">Enter your API key and season, then load rankings.</p>
+  <div id="bar" class="bar" hidden>
+    <select id="poll" aria-label="Poll"></select>
+    <select id="conf" aria-label="Highlight conference"></select>
+    <div class="seg" role="group" aria-label="View">
+      <button data-view="grid" aria-pressed="true">Grid</button>
+      <button data-view="weeks" aria-pressed="false">Weeks</button>
+      <button data-view="proj" aria-pressed="false">Projection</button>
+    </div>
+    <button id="refresh" class="tool">Refresh from API</button>
+    <button id="save" class="tool">Download JSON</button>
+  </div>
+  <div id="confsum" class="confsum"></div>
+  <div id="out"></div>
+</div></main>
+<dialog id="team" aria-labelledby="team-name">
+  <div class="dlg-head"><h2 id="team-name"></h2><button id="team-close" class="x" aria-label="Close">×</button></div>
+  <div id="team-body"></div>
+</dialog>
+<script src="js/core.js"></script>
+<script src="js/api.js"></script>
+<script src="js/views.js"></script>
+<script src="js/projection.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
