@@ -46,7 +46,9 @@ $("#out").addEventListener("click", e => { const b=e.target.closest("button.tl")
 $("#team-close").onclick = () => $("#team").close();
 $("#team").addEventListener("click", e => { if(e.target.id==="team") $("#team").close(); });
 
-document.addEventListener("click", e => { if(e.target.id==="loadsp") loadSP(); });
+document.addEventListener("click", e => { if(e.target.closest(".loadratings")) loadRatings(false); });
+$("#showmetrics").checked = showMetrics;
+$("#showmetrics").onchange = e => { showMetrics = e.target.checked; store.set("cfbd-metrics", showMetrics ? "1" : "0"); render(); };
 
 // Live updates: redraw only the list so the panel keeps its state.
 document.addEventListener("input", e => {

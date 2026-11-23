@@ -64,6 +64,17 @@ tfoot .team{background:var(--hl-bg)}
 #weights fieldset{border:0;border-top:1px solid var(--line);margin:10px 0 0;padding:8px 0 0}
 #weights legend{font:700 1.05rem var(--display);padding:0 6px 0 0}
 .spstatus{display:block;margin-top:4px;font-weight:500}
+.spstatus:empty{display:none}
+.mx{display:block;font-size:.78rem;color:var(--muted);line-height:1.35;font-weight:400}
+.mx > span{white-space:nowrap}
+.mx i{font-style:normal;color:var(--ink);font-weight:600}
+.team .mx{white-space:normal;max-width:260px}
+.mlegend{flex-basis:100%;margin:4px 0 0;font-size:.8rem;color:var(--muted)}
+.mlegend details{display:inline}
+.mlegend summary{cursor:pointer;display:inline}
+.mlegend .tool{margin-left:6px;background:var(--paper);color:var(--ink);border:1px solid var(--line)}
+.mtoggle{display:inline-flex;align-items:center;gap:6px;font-size:.9rem;color:var(--ink)}
+.mtoggle input{width:auto;padding:0;accent-color:var(--turf-2)}
 .spstatus.err{color:var(--down)}
 .wnote{font-size:.85rem;color:var(--muted);margin:8px 0 0}
 label.wt{display:grid;grid-template-columns:1fr 130px 56px;gap:10px;align-items:center;font-size:.85rem;padding:3px 0}
@@ -119,3 +130,5 @@ button.x{background:transparent;border:0;color:#F2F4EE;font-size:1.8rem;line-hei
 #team-body .none{color:var(--muted);margin:4px 0}
 .empty{padding:40px 0;color:var(--muted);max-width:60ch}
 @media (prefers-reduced-motion:no-preference){ td.c span{transition:transform .12s} td.c:hover span{transform:scale(1.15)} }
+.bar .mtoggle{margin-left:auto}
+.bar .mtoggle + .tool{margin-left:0}
