@@ -2,7 +2,7 @@
 
 function ingest(data, games, note){
   allGames = games; rawData = data;
-  spData = readCache($("#year").value)?.sp || null;
+  { const c = readCache($("#year").value); spData = c?.sp || null; fpiData = c?.fpi || null; }
   if(!Array.isArray(data) || !data.length){ setStatus("No rankings were returned for that season.", true); $("#out").innerHTML=""; $("#bar").hidden=true; return; }
   releases = data.map(d => ({
     type: d.seasonType, week: d.week,
@@ -89,7 +89,7 @@ function render(){
   const weeks = releases.filter(r=>r.polls[poll]?.length);
   const conf=$("#conf").value;
   if(!weeks.length){ $("#confsum").innerHTML=""; $("#out").innerHTML=`<p class="empty">No releases for ${esc(poll)} yet this season.</p>`; return; }
-  $("#confsum").innerHTML = confSummary(weeks[weeks.length-1], poll, conf);
+  $("#confsum").innerHTML = confSummary(weeks[weeks.length-1], poll, conf) + metricsLegend(poll);
   $("#out").innerHTML = view==="grid" ? grid(weeks,poll,conf) : view==="proj" ? projView(poll,conf) : weekCards(weeks,poll,conf);
 }
 
@@ -115,7 +115,7 @@ function grid(weeks,poll,conf){
     return Math.min(...a.ranks.map(r=>r??99)) - Math.min(...b.ranks.map(r=>r??99));
   });
   const head = `<tr><th class="team">Team</th>${weeks.map(w=>`<th>${w.label}</th>`).join("")}</tr>`;
-  const body = rows.map(t=>`<tr${conf && t.conf===conf ? ' class="hl"' : ""}><td class="team"><button class="tl" data-team="${esc(t.school)}">${esc(t.school)}</button><small>${esc(recStr(weeks[last], t.school))}${weeks[last].rec ? ", " : ""}${esc(t.conf)}</small></td>${
+  const body = rows.map(t=>`<tr${conf && t.conf===conf ? ' class="hl"' : ""}><td class="team"><button class="tl" data-team="${esc(t.school)}">${esc(t.school)}</button><small>${esc(recStr(weeks[last], t.school))}${weeks[last].rec ? ", " : ""}${esc(t.conf)}</small>${metricsLine(t.school)}</td>${
     t.ranks.map(r=>{
       if(r==null) return `<td class="c"></td>`;
       const a=(1-(r-1)/25)*0.85+0.1;
@@ -141,7 +141,7 @@ function weekCards(weeks,poll,conf){
       }
       const fp = t.firstPlaceVotes ? ` (${t.firstPlaceVotes})` : "";
       const pts = t.points ? `${t.points} pts${fp}` : "";
-      return `<li${conf && t.conference===conf ? ' class="hl"' : ""}><span class="rk">${t.rank}</span><span><button class="tl" data-team="${esc(t.school)}">${esc(t.school)}</button> <span class="rec">${esc(recStr(w, t.school))}</span> <span class="meta">${esc(t.conference)}${pts?", "+pts:""}</span></span><span class="mv ${cls}">${mv}</span></li>`;
+      return `<li${conf && t.conference===conf ? ' class="hl"' : ""}><span class="rk">${t.rank}</span><span><button class="tl" data-team="${esc(t.school)}">${esc(t.school)}</button> <span class="rec">${esc(recStr(w, t.school))}</span> <span class="meta">${esc(t.conference)}${pts?", "+pts:""}</span>${metricsLine(t.school)}</span><span class="mv ${cls}">${mv}</span></li>`;
     }).join("");
     const now=new Set(w.polls[poll].map(t=>t.school));
     const dropped = prev ? prev.filter(t=>!now.has(t.school)).map(t=>`${esc(t.school)} (${t.rank})`) : [];
