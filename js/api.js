@@ -63,8 +63,8 @@ function writeCache(y,data,games,gamesAt=Date.now()){
   const prev = readCache(y), now = Date.now(), newest = newestWeek(data);
   const prevNewest = prev ? (prev.newest ?? newestWeek(prev.data)) : -1;
   const newWeekAt = newest > prevNewest ? now : (prev?.newWeekAt ?? prev?.fetchedAt ?? now);
-  const sp = prev?.sp;
-  store.set(cacheKey(y), JSON.stringify({ v: 2, fetchedAt: now, gamesAt, newest, newWeekAt, data, games, ...(sp?{sp}:{}) }));
+  const sp = prev?.sp, fpi = prev?.fpi;
+  store.set(cacheKey(y), JSON.stringify({ v: 2, fetchedAt: now, gamesAt, newest, newWeekAt, data, games, ...(sp?{sp}:{}), ...(fpi?{fpi}:{}) }));
 }
 
 // Football season year: Aug–Dec belongs to this year, Jan–Jul to last year.
@@ -153,6 +153,7 @@ async function load(force=false){
     ingest(data, games, after > before && cached ? `New poll release loaded and saved (${fmtTime(Date.now())}).`
       : waiting ? `CFBD hasn't posted this week's poll yet (checked ${fmtTime(Date.now())}). Try Load again in 30 minutes or so.`
       : `Loaded from the API and saved (${fmtTime(Date.now())}).`);
+    if(showMetrics) loadRatings(true);   // refreshes SP+/FPI only when stale
   }catch(e){
     const msg = e instanceof TypeError
       ? "The browser blocked the request before it reached the API. Serve this file from a local web server (for example `npx serve`) or open a saved JSON response instead."
