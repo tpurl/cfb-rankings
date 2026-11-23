@@ -1,4 +1,4 @@
-// Projection: adjustable weights, scoring model, SP+ ratings, and the Projection view.
+// Projection: adjustable weights, scoring model, and the Projection view.
 
 // ---- Projection: next poll from games since the latest poll ----
 // A transparent heuristic, not a vote model. Each ranked team's latest poll points are
@@ -175,38 +175,6 @@ function spStrength(){
   const n = {}; for(const [t,v] of Object.entries(spData.ratings)) n[t] = Math.max(0, Math.min(1, (v-med)/(max-med)));
   return spData._norm = n;
 }
-// Status for SP+ is shown next to its button, since the page-level status is usually scrolled out of view.
-let spMsg = "", spErr = false;
-function spSay(msg, err=false){
-  spMsg = msg; spErr = err;
-  const el = $("#spstatus"); if(el){ el.textContent = msg; el.classList.toggle("err", err); }
-}
-async function loadSP(){
-  const key=$("#key").value.trim(), year=$("#year").value, base=$("#base").value.replace(/\/$/,"");
-  if(!key){ spSay("Add your API key at the top of the page first.", true); return; }
-  const c = readCache(year);
-  if(!c){ spSay(`Load the ${year} season from the API first. SP+ is saved alongside it.`, true); return; }
-  const btn = $("#loadsp"); if(btn) btn.disabled = true;
-  spSay("Loading SP+ ratings…");
-  try{
-    const r = await fetch(`${base}/ratings/sp?year=${year}`, { headers:{ Authorization:`Bearer ${key}`, Accept:"application/json" } });
-    noteHeader(r);
-    if(r.status===401 || r.status===403) throw new Error(`CFBD refused SP+ (${r.status}). Your key's tier may not include ratings, or the key is wrong.`);
-    if(r.status===429) throw new Error("CFBD says the monthly call limit is used up (429).");
-    if(!r.ok) throw new Error(`CFBD returned ${r.status} for SP+ ratings.`);
-    const body = await r.json();
-    const ratings = {};
-    for(const x of Array.isArray(body) ? body : []) if(typeof x.rating==="number" && x.team && x.team!=="nationalAverages") ratings[x.team]=x.rating;
-    const n = Object.keys(ratings).length;
-    if(!n) throw new Error(`CFBD returned no SP+ ratings for ${year} yet. Try again later in the week.`);
-    c.sp = { at: Date.now(), ratings }; store.set(cacheKey(year), JSON.stringify(c));
-    spData = c.sp; checkQuota();
-    spSay(`Loaded SP+ for ${n} teams.`); render();
-  }catch(e){
-    spSay(e instanceof TypeError ? "The request was blocked before it reached CFBD (network or browser)." : e.message, true);
-  }finally{ const b2=$("#loadsp"); if(b2) b2.disabled=false; }
-}
-
 function projList(p, conf){
   const items = p.list.map(t=>{
     let mv="", cls="";
@@ -214,7 +182,7 @@ function projList(p, conf){
     else if(t.prev>t.rank){ mv=`▲${t.prev-t.rank}`; cls="up"; }
     else if(t.prev<t.rank){ mv=`▼${t.rank-t.prev}`; cls="down"; }
     const why = t.why.map(w=>`<span class="why ${w.cls}">${esc(w.txt)}</span>`).join("");
-    return `<li${conf && t.conference===conf ? ' class="hl"' : ""}><span class="rk">${t.rank}</span><span><button class="tl" data-team="${esc(t.school)}">${esc(t.school)}</button> <span class="rec">${esc(t.rec)}</span> <span class="meta">${esc(t.conference)}, score ${t.score.toFixed(3)}</span>${why}</span><span class="mv ${cls}">${mv}</span></li>`;
+    return `<li${conf && t.conference===conf ? ' class="hl"' : ""}><span class="rk">${t.rank}</span><span><button class="tl" data-team="${esc(t.school)}">${esc(t.school)}</button> <span class="rec">${esc(t.rec)}</span> <span class="meta">${esc(t.conference)}, score ${t.score.toFixed(3)}</span>${metricsLine(t.school)}${why}</span><span class="mv ${cls}">${mv}</span></li>`;
   }).join("");
   const dropped = p.dropped.length ? `<p class="out">Projected to drop out: ${p.dropped.map(t=>`${esc(t.school)} (${t.rank})`).join(", ")}</p>` : "";
   return `<section class="week proj${conf?" hl-on":""}"><ol>${items}</ol>${dropped}</section>`;
@@ -224,8 +192,8 @@ function weightsPanel(){
   const changed = Object.keys(W).filter(k=>W[k]!==WEIGHT_DEFAULTS[k]).length;
   const spBase = spData ? `SP+ ratings for ${Object.keys(spData.ratings).length} teams, as of ${fmtTime(spData.at)}.`
                         : `SP+ isn't loaded, so that slider has no effect yet.`;
-  const spLine = `<p class="wnote">${spBase} <button id="loadsp" class="tool small">${spData?"Reload":"Load"} SP+ (1 call)</button>
-    <span id="spstatus" class="spstatus${spErr?" err":""}">${esc(spMsg)}</span></p>`;
+  const spLine = `<p class="wnote">${spBase} <button class="tool small loadratings">${spData?"Reload":"Load"} SP+ and FPI (2 calls)</button>
+    <span class="spstatus${spErr?" err":""}">${esc(spMsg)}</span></p>`;
   const groups = WEIGHT_DEFS.map(g=>`<fieldset><legend>${g.group}</legend>${g.note?`<p class="wnote">${g.note}</p>`:""}${g.group==="Opponent strength"?spLine:""}${g.items.map(([k,label,def,min,max,step])=>
     `<label class="wt"><span>${label}</span><input type="range" data-w="${k}" min="${min}" max="${max}" step="${step}" value="${W[k]}"><output id="o-${k}"${W[k]!==def?' class="chg"':""}>${W[k]}</output></label>`).join("")}</fieldset>`).join("");
   return `<details id="weights"${weightsOpen?" open":""}><summary>Adjust weights${changed?` (${changed} changed)`:""}</summary>
